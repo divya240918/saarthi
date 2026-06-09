@@ -6,13 +6,13 @@ export const uploadDocument = async (req, res) => {
         const file = req.file;
 
         if (!file) {
-            return res.status(400).json({ message: "File Not Found" });
+            return res.status(400).json({ message: "file Not found" });
         }
 
         const uploadStream = cloudinary.uploader.upload_stream(
             {
                 resource_type: "raw",
-                folder: "documind",
+                folder: "saarthi",
             },
             async (error, result) => {
                 if (error) {
@@ -20,22 +20,17 @@ export const uploadDocument = async (req, res) => {
                 }
 
                 const document = await Document.create({
-                    fileName: file.originalname,
-                    uploadedBy: req.user._id,
+                    fileName: file.fileName,
                     fileUrl: result.secure_url,
                     cloudinaryId: result.public_id,
-                });
+                    uploadedBy: req.user._id,
 
-                return res.status(201).json({
-                    message: "Uploaded successfully",
-                    document,
-                });
+                })
+
+                return res.status(201).json({ message: "Document Uploaded Successfully" });
             }
-        );
-
-        uploadStream.end(file.buffer);
-
+        )
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
-};
+}
