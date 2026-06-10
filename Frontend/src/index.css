@@ -1,1 +1,119 @@
 @import "tailwindcss";
+
+/* ═══════════════════════════════════════════════
+   THEME TOKENS  (Tailwind v4 @theme block)
+   These become real utility classes:
+   bg-navy, text-navy, bg-yellow, text-yellow …
+═══════════════════════════════════════════════ */
+@theme {
+  --color-navy:        #0A1628;
+  --color-navy-mid:    #0F2044;
+  --color-blue:        #2563EB;
+  --color-blue-dark:   #1D4ED8;
+  --color-yellow:      #F59E0B;
+  --color-yellow-dark: #D97706;
+  --color-offwhite:    #F7F9FB;
+
+  --font-syne:  'Syne', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+
+  --animate-float:     float-up-down 4s ease-in-out infinite;
+  --animate-float-alt: float-down-up 5s ease-in-out infinite;
+  --animate-fade-up:   fade-slide-up 0.55s ease forwards;
+  --animate-spin-slow: spin-once 0.75s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════
+   KEYFRAMES
+═══════════════════════════════════════════════ */
+@keyframes float-up-down {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-14px); }
+}
+@keyframes float-down-up {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(12px); }
+}
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin-once {
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════
+   BASE STYLES
+═══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html  { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: #fff;
+  color: #0A1628;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Syne', sans-serif;
+  margin: 0;
+}
+
+p, span, a, label, button { margin: 0; }
+
+/* scrollbar */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: #EFF6FF; }
+::-webkit-scrollbar-thumb { background: #2563EB; border-radius: 3px; }
+
+/* ═══════════════════════════════════════════════
+   CUSTOM UTILITIES  (Tailwind v4 @utility)
+═══════════════════════════════════════════════ */
+
+/* dot-pattern hero background */
+@utility dot-bg {
+  background-image: radial-gradient(circle, rgba(10,22,40,0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* glassmorphism card */
+@utility glass {
+  background: rgba(255,255,255,0.07);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.13);
+}
+
+/* animation delay helpers */
+@utility delay-1 { animation-delay: 0.08s; }
+@utility delay-2 { animation-delay: 0.18s; }
+@utility delay-3 { animation-delay: 0.28s; }
+@utility delay-4 { animation-delay: 0.38s; }
+
+/* ═══════════════════════════════════════════════
+   COMPONENT CLASSES  (plain CSS — always emitted)
+═══════════════════════════════════════════════ */
+
+/* shared form input */
+.s-input {
+  display: block;
+  width: 100%;
+  padding: 13px 18px 13px 44px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: #0A1628;
+  background: #FAFBFF;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+  outline: none;
+}
+.s-input:focus {
+  border-color: #2563EB;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.09);
+}
+.s-input::placeholder { color: #94A3B8; }

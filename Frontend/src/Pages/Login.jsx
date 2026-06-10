@@ -1,331 +1,172 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const LoginPage = () => {
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+const GoogleIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24">
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+  </svg>
+);
+
+export default function LoginPage() {
+  const [form,     setForm]     = useState({ email:"", password:"" });
+  const [showPass, setShowPass] = useState(false);
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState("");
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setError("");
-  };
+  const handleChange = e => { setForm({...form, [e.target.name]: e.target.value}); setError(""); };
 
   const handleSubmit = async () => {
-    if (!form.email || !form.password) {
-      setError("Please fill in all fields.");
-      return;
-    }
-    setLoading(true);
-    setError("");
+    if (!form.email || !form.password) { setError("Please fill in all fields."); return; }
+    setLoading(true); setError("");
     try {
-      const res = await fetch("/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(form),
-      });
+      const res  = await fetch("/api/users/login", { method:"POST", headers:{"Content-Type":"application/json"}, credentials:"include", body: JSON.stringify(form) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
       navigate("/dashboard");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(err.message); }
+    finally { setLoading(false); }
   };
 
-  const floatingDocs = [
-    { top: "8%", left: "5%", label: "Physics.pdf", pages: "42 pages", emoji: "⚛️", delay: "0s" },
-    { top: "30%", right: "4%", label: "Math Notes.pdf", pages: "28 pages", emoji: "📐", delay: "1.2s" },
-    { bottom: "25%", left: "8%", label: "History.pdf", pages: "65 pages", emoji: "📜", delay: "2.1s" },
-    { bottom: "8%", right: "6%", label: "Biology.pdf", pages: "53 pages", emoji: "🧬", delay: "0.6s" },
-  ];
-
   return (
-    <div style={{
-      minHeight: "100vh",
-      display: "flex",
-      fontFamily: "'Inter', sans-serif",
-    }}>
+    <div className="min-h-screen flex">
 
-      {/* LEFT PANEL — Form */}
-      <div style={{
-        flex: "0 0 480px",
-        background: "#FFFFFF",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        padding: "48px 52px",
-        position: "relative",
-        zIndex: 2,
-        boxShadow: "4px 0 32px rgba(10,22,40,0.08)",
-      }}>
+      {/* ── LEFT — Form ── */}
+      <div className="w-full lg:w-[480px] shrink-0 bg-white flex flex-col justify-center px-12 py-14 relative z-10 shadow-[4px_0_32px_rgba(10,22,40,0.07)]">
 
-        {/* Logo */}
-        <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: "10px", textDecoration: "none", marginBottom: "52px" }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: "10px",
-            background: "linear-gradient(135deg, #2563EB, #1D4ED8)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "18px",
-          }}>📚</div>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "22px", color: "#0A1628" }}>Saarthi</span>
+        <Link to="/" className="flex items-center gap-2.5 no-underline mb-12">
+          <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-blue to-blue-dark flex items-center justify-center text-lg leading-none">📚</div>
+          <span className="font-syne font-extrabold text-[22px] text-navy">Saarthi</span>
         </Link>
 
-        {/* Heading */}
-        <div style={{ marginBottom: "36px" }}>
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "34px", fontWeight: 800, color: "#0A1628", marginBottom: "10px" }}>
-            Welcome back!
-          </h1>
-          <p style={{ fontSize: "15px", color: "#64748B", lineHeight: 1.6 }}>
-            Sign in to continue your AI-powered study session with Saarthi.
-          </p>
-        </div>
+        <h1 className="font-syne font-extrabold text-[34px] text-navy mb-2">Welcome back!</h1>
+        <p className="font-inter text-[15px] text-slate-500 leading-relaxed mb-8">
+          Sign in to continue your AI-powered study session.
+        </p>
 
-        {/* Error */}
         {error && (
-          <div style={{
-            background: "#FEF2F2", border: "1px solid #FECACA",
-            borderRadius: "10px", padding: "12px 16px",
-            display: "flex", alignItems: "center", gap: "8px",
-            marginBottom: "20px",
-          }}>
-            <span style={{ fontSize: "16px" }}>⚠️</span>
-            <span style={{ fontSize: "14px", color: "#DC2626" }}>{error}</span>
+          <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5">
+            <span className="text-base">⚠️</span>
+            <span className="font-inter text-[14px] text-red-600">{error}</span>
           </div>
         )}
 
-        {/* Form fields */}
-        <div style={{ marginBottom: "16px" }}>
-          <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "8px" }}>Email address</label>
-          <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", pointerEvents: "none" }}>✉️</span>
-            <input
-              type="email"
-              name="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={handleChange}
-              className="saarthi-input"
-              style={{ paddingLeft: "44px" }}
-              onKeyDown={e => e.key === "Enter" && handleSubmit()}
-            />
+        <div className="mb-4">
+          <label className="block font-inter text-[13px] font-semibold text-slate-700 mb-2">Email address</label>
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-base pointer-events-none select-none">✉️</span>
+            <input type="email" name="email" placeholder="you@example.com"
+                   value={form.email} onChange={handleChange}
+                   onKeyDown={e => e.key==="Enter" && handleSubmit()}
+                   className="s-input" />
           </div>
         </div>
 
-        <div style={{ marginBottom: "8px" }}>
-          <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "8px" }}>Password</label>
-          <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", pointerEvents: "none" }}>🔑</span>
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Enter your password"
-              value={form.password}
-              onChange={handleChange}
-              className="saarthi-input"
-              style={{ paddingLeft: "44px", paddingRight: "44px" }}
-              onKeyDown={e => e.key === "Enter" && handleSubmit()}
-            />
-            <button
-              onClick={() => setShowPassword(!showPassword)}
-              style={{
-                position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)",
-                background: "none", border: "none", cursor: "pointer", fontSize: "16px", opacity: 0.5,
-              }}
-            >{showPassword ? "🙈" : "👁️"}</button>
+        <div className="mb-2">
+          <label className="block font-inter text-[13px] font-semibold text-slate-700 mb-2">Password</label>
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-base pointer-events-none select-none">🔑</span>
+            <input type={showPass?"text":"password"} name="password" placeholder="Enter your password"
+                   value={form.password} onChange={handleChange}
+                   onKeyDown={e => e.key==="Enter" && handleSubmit()}
+                   className="s-input pr-12" />
+            <button onClick={()=>setShowPass(p=>!p)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-base opacity-50 hover:opacity-80 transition-opacity p-0">
+              {showPass?"🙈":"👁️"}
+            </button>
           </div>
         </div>
 
-        <div style={{ textAlign: "right", marginBottom: "28px" }}>
-          <a href="#" style={{ fontSize: "13px", color: "#2563EB", textDecoration: "none", fontWeight: 500 }}>Forgot password?</a>
+        <div className="text-right mb-7">
+          <a href="#" className="font-inter text-[13px] text-blue font-medium no-underline hover:underline">Forgot password?</a>
         </div>
 
-        {/* Login button */}
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="btn-primary"
-          style={{
-            width: "100%", padding: "15px",
-            fontSize: "16px",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-            opacity: loading ? 0.75 : 1,
-          }}
-        >
-          {loading ? (
-            <>
-              <div style={{
-                width: 18, height: 18, borderRadius: "50%",
-                border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white",
-                animation: "spin 0.7s linear infinite",
-              }} />
-              Signing in...
-            </>
-          ) : "Sign In →"}
+        <button onClick={handleSubmit} disabled={loading}
+                className={`w-full py-4 rounded-[12px] bg-gradient-to-br from-blue to-blue-dark font-syne font-semibold text-[16px] text-white border-none cursor-pointer flex items-center justify-center gap-2.5 shadow-[0_4px_18px_rgba(37,99,235,0.28)] hover:-translate-y-0.5 hover:shadow-[0_8px_26px_rgba(37,99,235,0.38)] transition-all duration-250 ${loading?"opacity-75":""}`}>
+          {loading
+            ? <><div className="w-[18px] h-[18px] rounded-full border-2 border-white/30 border-t-white animate-spin-slow" />Signing in...</>
+            : "Sign In →"}
         </button>
 
-        {/* Divider */}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", margin: "28px 0" }}>
-          <div style={{ flex: 1, height: 1, background: "#E2E8F0" }} />
-          <span style={{ fontSize: "13px", color: "#94A3B8" }}>or continue with</span>
-          <div style={{ flex: 1, height: 1, background: "#E2E8F0" }} />
+        <div className="flex items-center gap-4 my-7">
+          <div className="flex-1 h-px bg-slate-200" />
+          <span className="font-inter text-[13px] text-slate-400">or continue with</span>
+          <div className="flex-1 h-px bg-slate-200" />
         </div>
 
-        {/* Google OAuth */}
-        <button style={{
-          width: "100%", padding: "13px",
-          borderRadius: "12px", border: "1.5px solid #E2E8F0",
-          background: "white", cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
-          fontFamily: "'Inter', sans-serif", fontSize: "15px", fontWeight: 500, color: "#374151",
-          transition: "all 0.2s ease",
-        }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = "#94A3B8"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.06)"; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = "#E2E8F0"; e.currentTarget.style.boxShadow = "none"; }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-          </svg>
+        <button className="w-full py-3.5 rounded-[12px] border-[1.5px] border-slate-200 bg-white flex items-center justify-center gap-2.5 font-inter text-[15px] font-medium text-slate-700 cursor-pointer hover:border-slate-400 hover:shadow-[0_4px_14px_rgba(0,0,0,0.06)] transition-all duration-200">
+          <GoogleIcon />
           Continue with Google
         </button>
 
-        {/* Register link */}
-        <p style={{ textAlign: "center", fontSize: "14px", color: "#64748B", marginTop: "28px" }}>
+        <p className="text-center font-inter text-[14px] text-slate-500 mt-7">
           Don't have an account?{" "}
-          <Link to="/register" style={{ color: "#2563EB", fontWeight: 600, textDecoration: "none" }}>
-            Create one free →
-          </Link>
+          <Link to="/register" className="text-blue font-semibold no-underline hover:underline">Create one free →</Link>
         </p>
       </div>
 
-      {/* RIGHT PANEL — Visual */}
-      <div style={{
-        flex: 1,
-        background: "linear-gradient(160deg, #0A1628 0%, #0F2044 60%, #0A1628 100%)",
-        position: "relative",
-        overflow: "hidden",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}>
-        {/* Grid */}
-        <div style={{
-          position: "absolute", inset: 0, opacity: 0.04,
-          backgroundImage: "linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)",
-          backgroundSize: "50px 50px",
-        }} />
+      {/* ── RIGHT — Dark Visual Panel ── */}
+      <div className="hidden lg:flex flex-1 relative overflow-hidden items-center justify-center bg-gradient-to-br from-navy via-navy-mid to-navy">
 
-        {/* Glow blobs */}
-        <div style={{
-          position: "absolute", top: "20%", left: "20%",
-          width: 300, height: 300, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%)",
-          filter: "blur(40px)",
-        }} />
-        <div style={{
-          position: "absolute", bottom: "15%", right: "15%",
-          width: 260, height: 260, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(245,158,11,0.15) 0%, transparent 70%)",
-          filter: "blur(40px)",
-        }} />
+        {/* dot grid */}
+        <div className="absolute inset-0 dot-bg opacity-60" />
 
-        {/* Floating doc cards */}
-        {floatingDocs.map((doc, i) => (
-          <div key={i} style={{
-            position: "absolute",
-            top: doc.top, left: doc.left, right: doc.right, bottom: doc.bottom,
-            background: "rgba(255,255,255,0.07)", backdropFilter: "blur(16px)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: "14px", padding: "14px 18px",
-            width: 180,
-            animation: `float ${3.5 + i * 0.4}s ease-in-out ${doc.delay} infinite`,
-            boxShadow: "0 12px 32px rgba(0,0,0,0.3)",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div style={{
-                width: 36, height: 40, background: "linear-gradient(135deg, #EF4444, #DC2626)",
-                borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px",
-              }}>📄</div>
-              <div>
-                <div style={{ fontSize: "12px", fontWeight: 600, color: "white" }}>{doc.label}</div>
-                <div style={{ fontSize: "10px", color: "#64748B" }}>{doc.pages}</div>
-              </div>
+        {/* glow orbs */}
+        <div className="absolute top-[15%] left-[15%] w-[320px] h-[320px] rounded-full bg-blue/15 blur-[60px] pointer-events-none" />
+        <div className="absolute bottom-[12%] right-[12%] w-[280px] h-[280px] rounded-full bg-yellow/12 blur-[60px] pointer-events-none" />
+
+        {/* Floating PDF pills */}
+        {[
+          {label:"Physics.pdf",  pages:"42 pages", cls:"top-[10%] left-[8%]",     delay:"0s"  },
+          {label:"Math Notes",   pages:"28 pages", cls:"top-[30%] right-[6%]",    delay:"1.2s"},
+          {label:"History.pdf",  pages:"65 pages", cls:"bottom-[24%] left-[7%]",  delay:"2s"  },
+          {label:"Biology.pdf",  pages:"53 pages", cls:"bottom-[10%] right-[5%]", delay:"0.6s"},
+        ].map((d,i)=>(
+          <div key={i} style={{animationDelay:d.delay}}
+               className={`absolute ${d.cls} glass rounded-2xl px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)] animate-float flex items-center gap-2.5`}>
+            <div className="w-9 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-base leading-none">📄</div>
+            <div>
+              <p className="font-syne font-semibold text-[12px] text-white leading-none mb-0.5">{d.label}</p>
+              <p className="font-inter text-[10px] text-slate-400">{d.pages}</p>
             </div>
           </div>
         ))}
 
-        {/* Central message */}
-        <div style={{ textAlign: "center", zIndex: 1, padding: "0 48px" }}>
-          <div style={{
-            width: 88, height: 88, borderRadius: "24px",
-            background: "linear-gradient(135deg, #F59E0B, #D97706)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "40px", margin: "0 auto 32px",
-            boxShadow: "0 20px 50px rgba(245,158,11,0.35)",
-          }}>📚</div>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "white", marginBottom: "16px", lineHeight: 1.2 }}>
+        {/* Central content */}
+        <div className="relative z-10 text-center px-12 max-w-[420px]">
+          <div className="w-[88px] h-[88px] rounded-[24px] bg-gradient-to-br from-yellow to-yellow-dark flex items-center justify-center text-[40px] mx-auto mb-8 shadow-[0_20px_48px_rgba(245,158,11,0.35)] leading-none">📚</div>
+          <h2 className="font-syne font-extrabold text-[32px] text-white leading-[1.2] mb-4">
             Your AI study<br />companion awaits
           </h2>
-          <p style={{ fontSize: "16px", color: "#64748B", lineHeight: 1.7, maxWidth: 360 }}>
+          <p className="font-inter text-[16px] text-slate-400 leading-relaxed mb-8">
             Upload any PDF and get quizzes, flashcards, summaries, and a smart chat — all powered by AI.
           </p>
 
-          {/* Feature pills */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center", marginTop: "32px" }}>
-            {["💬 Chat with PDF", "🃏 Flashcards", "📝 Quiz", "📊 Summary", "✨ Notes"].map(f => (
-              <div key={f} style={{
-                padding: "8px 16px", borderRadius: "100px",
-                background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)",
-                fontSize: "13px", color: "#CBD5E1",
-              }}>{f}</div>
+          <div className="flex flex-wrap justify-center gap-2.5 mb-9">
+            {["💬 Chat","🃏 Flashcards","📝 Quiz","📊 Summary","✨ Notes"].map(f=>(
+              <span key={f} className="px-4 py-2 rounded-full bg-white/[0.08] border border-white/[0.12] font-inter text-[13px] text-slate-300">
+                {f}
+              </span>
             ))}
           </div>
 
-          {/* Testimonial snippet */}
-          <div style={{
-            marginTop: "40px",
-            background: "rgba(255,255,255,0.05)", backdropFilter: "blur(16px)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "16px", padding: "20px 24px",
-            textAlign: "left",
-          }}>
-            <p style={{ fontSize: "14px", color: "#CBD5E1", lineHeight: 1.7, fontStyle: "italic", marginBottom: "12px" }}>
+          <div className="glass rounded-2xl px-6 py-5 text-left">
+            <p className="font-inter text-[14px] text-slate-300 italic leading-relaxed mb-4">
               "Saarthi helped me prepare for my semester exam in half the time. The quiz feature is amazing!"
             </p>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: "50%",
-                background: "linear-gradient(135deg, #2563EB, #1D4ED8)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "white",
-              }}>PS</div>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue to-blue-dark flex items-center justify-center font-syne font-bold text-[13px] text-white">PS</div>
               <div>
-                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: "13px", color: "white" }}>Priya Sharma</div>
-                <div style={{ fontSize: "11px", color: "#64748B" }}>B.Tech CSE, 3rd Year</div>
+                <p className="font-syne font-semibold text-[13px] text-white">Priya Sharma</p>
+                <p className="font-inter text-[11px] text-slate-500">B.Tech CSE · 3rd Year</p>
               </div>
             </div>
           </div>
         </div>
-
-        <style>{`
-          @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
-          }
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
     </div>
   );
-};
-
-export default LoginPage;
+}

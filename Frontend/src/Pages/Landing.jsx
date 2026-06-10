@@ -1,484 +1,251 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-const LandingPage = () => {
+const NAV_LINKS = ["Features", "How It Works", "Testimonials"];
+
+const FEATURES = [
+  { icon:"💬", title:"Chat with PDF",  desc:"Ask anything and get precise answers sourced directly from your document — no hallucinations.",     bg:"bg-blue-50",   },
+  { icon:"📝", title:"Smart Quiz",     desc:"Auto-generate MCQs from any chapter. Test yourself before your test tests you.",                     bg:"bg-amber-50",  },
+  { icon:"🃏", title:"Flashcards",     desc:"Key concepts distilled into bite-sized cards. Review, flip, retain — without making them by hand.",  bg:"bg-green-50",  },
+  { icon:"📊", title:"Summary",        desc:"One upload, one clean summary. Cut through 80 pages of dense text in under 10 seconds.",             bg:"bg-purple-50", },
+  { icon:"✨", title:"Generate Notes", desc:"Turn raw PDF text into well-structured, topic-wise notes formatted for your study workflow.",         bg:"bg-orange-50", },
+];
+
+const STEPS = [
+  { n:"01", icon:"📤", title:"Upload your PDF",    desc:"Drop in any textbook chapter, research paper, or study material — any PDF works.", yellow:false },
+  { n:"02", icon:"🎯", title:"Pick your tool",     desc:"Choose Chat, Quiz, Flashcards, Summary, or Notes based on what your study session needs.", yellow:true },
+  { n:"03", icon:"🚀", title:"Learn effortlessly", desc:"Saarthi's AI processes your document and delivers exactly what you need, instantly.", yellow:false },
+];
+
+const TESTIMONIALS = [
+  { init:"PS", name:"Priya Sharma",  role:"B.Tech CSE · 3rd Year",    text:"Saarthi turned my 80-page paper into a quiz under a minute. Exam prep has never felt this easy." },
+  { init:"RV", name:"Rahul Verma",   role:"MBA Student",               text:"Chat with PDF is like having a tutor inside my document. I ask, it answers — accurate every time." },
+  { init:"AR", name:"Ananya Roy",    role:"Competitive Exam Aspirant", text:"Flashcards from my own material — exactly what I needed. My retention has improved a lot." },
+];
+
+export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
-  const [activeFeature, setActiveFeature] = useState(0);
+  const [activeFeat, setActiveFeat] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const fn = () => setScrolled(window.scrollY > 28);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveFeature((p) => (p + 1) % features.length);
-    }, 2800);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setActiveFeat(p => (p + 1) % FEATURES.length), 2600);
+    return () => clearInterval(t);
   }, []);
-
-  const features = [
-    { icon: "💬", label: "Chat with PDF", desc: "Ask questions, get instant answers from your document" },
-    { icon: "📝", label: "Smart Quiz", desc: "Auto-generated quizzes to test your understanding" },
-    { icon: "🃏", label: "Flashcards", desc: "Study smarter with AI-crafted flashcard decks" },
-    { icon: "📊", label: "Summary", desc: "Crisp, structured summaries of any document" },
-    { icon: "✨", label: "Generate Notes", desc: "Turn dense PDFs into clean, readable study notes" },
-  ];
-
-  const stats = [
-    { value: "10x", label: "Faster studying" },
-    { value: "5+", label: "AI-powered tools" },
-    { value: "100%", label: "Your data, private" },
-  ];
-
-  const howItWorks = [
-    { step: "01", title: "Upload your PDF", desc: "Drop in any study material, textbook chapter, or research paper in seconds.", icon: "📤" },
-    { step: "02", title: "Choose your tool", desc: "Pick from Chat, Quiz, Flashcards, Summary, or Notes — whatever fits your study session.", icon: "🎯" },
-    { step: "03", title: "Learn effortlessly", desc: "Saarthi's AI processes your document and delivers exactly what you need.", icon: "🚀" },
-  ];
-
-  const testimonials = [
-    { name: "Priya Sharma", role: "B.Tech CSE, 3rd Year", text: "Saarthi turned my 80-page research paper into a quiz in under a minute. My exam prep has never been this efficient.", avatar: "PS" },
-    { name: "Rahul Verma", role: "MBA Student", text: "The Chat feature is like having a tutor inside my PDF. I ask, it answers. Simple, fast, accurate.", avatar: "RV" },
-    { name: "Ananya Roy", role: "Competitive Exam Aspirant", text: "Flashcards from my own study material — exactly what I needed. My retention has improved massively.", avatar: "AR" },
-  ];
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", background: "#ffffff", color: "#0A1628", overflowX: "hidden" }}>
+    <div className="bg-white text-navy overflow-x-hidden">
 
-      {/* NAVBAR */}
-      <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        padding: "0 5%",
-        height: "68px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        background: scrolled ? "rgba(255,255,255,0.95)" : "transparent",
-        backdropFilter: scrolled ? "blur(20px)" : "none",
-        boxShadow: scrolled ? "0 1px 20px rgba(10,22,40,0.08)" : "none",
-        transition: "all 0.3s ease",
-        borderBottom: scrolled ? "1px solid rgba(226,232,240,0.6)" : "none",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: "10px",
-            background: "linear-gradient(135deg, #2563EB, #1D4ED8)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "18px",
-          }}>📚</div>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "22px", color: "#0A1628" }}>
-            Saarthi
-          </span>
-        </div>
+      {/* ── NAVBAR ── */}
+      <nav className={`fixed top-0 inset-x-0 z-50 h-[66px] flex items-center justify-between px-[5%] transition-all duration-300
+        ${scrolled ? "bg-white/95 backdrop-blur-xl shadow-[0_1px_20px_rgba(10,22,40,0.07)] border-b border-slate-100" : "bg-transparent"}`}>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
-          {["Features", "How It Works", "Testimonials"].map(item => (
-            <a key={item} href={`#${item.toLowerCase().replace(/ /g, "-")}`} style={{
-              fontFamily: "'Inter', sans-serif", fontSize: "14px", fontWeight: 500,
-              color: scrolled ? "#475569" : "#475569", textDecoration: "none",
-              transition: "color 0.2s",
-            }}
-              onMouseEnter={e => e.target.style.color = "#2563EB"}
-              onMouseLeave={e => e.target.style.color = "#475569"}
-            >{item}</a>
+        <Link to="/" className="flex items-center gap-2.5 no-underline">
+          <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-blue to-blue-dark flex items-center justify-center text-lg leading-none">📚</div>
+          <span className="font-syne font-extrabold text-[22px] text-navy">Saarthi</span>
+        </Link>
+
+        <div className="hidden md:flex items-center gap-8">
+          {NAV_LINKS.map(n => (
+            <a key={n} href={`#${n.toLowerCase().replace(/ /g,"-")}`}
+               className="font-inter text-[14px] font-medium text-slate-500 no-underline hover:text-blue transition-colors duration-200">
+              {n}
+            </a>
           ))}
         </div>
 
-        <div style={{ display: "flex", gap: "12px" }}>
-          <Link to="/login" style={{
-            padding: "9px 20px",
-            borderRadius: "10px",
-            border: "1.5px solid #E2E8F0",
-            fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: "14px",
-            color: "#0A1628", textDecoration: "none",
-            transition: "all 0.2s",
-            background: "white",
-          }}
-            onMouseEnter={e => { e.target.style.borderColor = "#2563EB"; e.target.style.color = "#2563EB"; }}
-            onMouseLeave={e => { e.target.style.borderColor = "#E2E8F0"; e.target.style.color = "#0A1628"; }}
-          >Sign in</Link>
-          <Link to="/register" style={{
-            padding: "9px 20px",
-            borderRadius: "10px",
-            background: "linear-gradient(135deg, #2563EB, #1D4ED8)",
-            fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: "14px",
-            color: "white", textDecoration: "none",
-            transition: "all 0.25s",
-            boxShadow: "0 4px 14px rgba(37,99,235,0.3)",
-          }}
-            onMouseEnter={e => { e.target.style.transform = "translateY(-1px)"; e.target.style.boxShadow = "0 6px 20px rgba(37,99,235,0.4)"; }}
-            onMouseLeave={e => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "0 4px 14px rgba(37,99,235,0.3)"; }}
-          >Get Started Free</Link>
+        <div className="flex items-center gap-3">
+          <Link to="/login"
+                className="px-5 py-2 rounded-[10px] border border-slate-200 font-syne font-semibold text-[14px] text-navy no-underline bg-white hover:border-blue hover:text-blue transition-all duration-200">
+            Sign in
+          </Link>
+          <Link to="/register"
+                className="px-5 py-2 rounded-[10px] bg-gradient-to-br from-blue to-blue-dark font-syne font-semibold text-[14px] text-white no-underline shadow-[0_4px_14px_rgba(37,99,235,0.30)] hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(37,99,235,0.40)] transition-all duration-200">
+            Get Started Free
+          </Link>
         </div>
       </nav>
 
-      {/* HERO SECTION */}
-      <section style={{
-        minHeight: "100vh",
-        background: "linear-gradient(160deg, #0A1628 0%, #0F2044 50%, #0A1628 100%)",
-        display: "flex", alignItems: "center",
-        padding: "80px 5% 60px",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        {/* Background grid */}
-        <div style={{
-          position: "absolute", inset: 0, opacity: 0.04,
-          backgroundImage: "linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
-        }} />
+      {/* ── HERO ── */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center pt-24 pb-16 px-[5%] overflow-hidden bg-offwhite dot-bg">
 
-        {/* Glow orbs */}
-        <div style={{
-          position: "absolute", top: "15%", left: "5%",
-          width: 400, height: 400, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(37,99,235,0.15) 0%, transparent 70%)",
-          filter: "blur(40px)",
-        }} />
-        <div style={{
-          position: "absolute", bottom: "10%", right: "8%",
-          width: 350, height: 350, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%)",
-          filter: "blur(40px)",
-        }} />
+        {/* colour washes */}
+        <div className="pointer-events-none absolute top-[-8%] left-[-5%] w-[520px] h-[520px] rounded-full bg-blue/10 blur-[80px]" />
+        <div className="pointer-events-none absolute bottom-[-6%] right-[-4%] w-[420px] h-[420px] rounded-full bg-yellow/10 blur-[80px]" />
 
-        <div style={{ maxWidth: 1200, margin: "0 auto", width: "100%", display: "flex", alignItems: "center", gap: "60px" }}>
-
-          {/* Left content */}
-          <div style={{ flex: 1, zIndex: 1 }}>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: "8px",
-              padding: "7px 16px", borderRadius: "100px",
-              background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)",
-              marginBottom: "24px",
-              animation: "fadeSlideUp 0.6s ease forwards",
-            }}>
-              <span style={{ fontSize: "12px" }}>✨</span>
-              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: "13px", color: "#F59E0B", fontWeight: 500 }}>
-                AI-Powered Study Companion
-              </span>
-            </div>
-
-            <h1 style={{
-              fontFamily: "'Syne', sans-serif",
-              fontSize: "clamp(40px, 5vw, 68px)",
-              fontWeight: 800,
-              color: "#FFFFFF",
-              lineHeight: 1.1,
-              marginBottom: "24px",
-              opacity: 0,
-              animation: "fadeSlideUp 0.6s ease 0.1s forwards",
-            }}>
-              Study smarter,<br />
-              <span style={{
-                background: "linear-gradient(135deg, #F59E0B, #FBBF24)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}>not harder</span>
-            </h1>
-
-            <p style={{
-              fontSize: "18px", lineHeight: 1.7, color: "#94A3B8",
-              maxWidth: 500, marginBottom: "40px",
-              opacity: 0,
-              animation: "fadeSlideUp 0.6s ease 0.2s forwards",
-            }}>
-              Upload any PDF and let Saarthi transform it into chats, quizzes, flashcards, summaries, and structured notes — instantly.
-            </p>
-
-            <div style={{
-              display: "flex", gap: "14px", marginBottom: "56px",
-              opacity: 0, animation: "fadeSlideUp 0.6s ease 0.3s forwards",
-            }}>
-              <Link to="/register" style={{
-                padding: "15px 32px",
-                borderRadius: "12px",
-                background: "linear-gradient(135deg, #F59E0B, #D97706)",
-                fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "16px",
-                color: "#0A1628", textDecoration: "none",
-                boxShadow: "0 8px 32px rgba(245,158,11,0.35)",
-                transition: "all 0.25s ease",
-              }}
-                onMouseEnter={e => { e.target.style.transform = "translateY(-3px)"; e.target.style.boxShadow = "0 12px 40px rgba(245,158,11,0.45)"; }}
-                onMouseLeave={e => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "0 8px 32px rgba(245,158,11,0.35)"; }}
-              >Start for Free →</Link>
-              <a href="#how-it-works" style={{
-                padding: "15px 28px",
-                borderRadius: "12px",
-                border: "1.5px solid rgba(255,255,255,0.15)",
-                fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: "16px",
-                color: "#FFFFFF", textDecoration: "none",
-                background: "rgba(255,255,255,0.05)",
-                transition: "all 0.25s ease",
-              }}
-                onMouseEnter={e => { e.target.style.background = "rgba(255,255,255,0.12)"; }}
-                onMouseLeave={e => { e.target.style.background = "rgba(255,255,255,0.05)"; }}
-              >See how it works</a>
-            </div>
-
-            {/* Stats */}
-            <div style={{
-              display: "flex", gap: "40px",
-              opacity: 0, animation: "fadeSlideUp 0.6s ease 0.4s forwards",
-            }}>
-              {stats.map((s) => (
-                <div key={s.label}>
-                  <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#F59E0B" }}>{s.value}</div>
-                  <div style={{ fontSize: "13px", color: "#64748B", marginTop: "2px" }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right — Hero visual */}
-          <div style={{ flex: 1, position: "relative", minHeight: "520px", zIndex: 1, display: "flex", justifyContent: "center" }}>
-
-            {/* Floating PDF cards */}
-            <div style={{
-              position: "absolute", top: "8%", left: "5%",
-              background: "rgba(255,255,255,0.07)", backdropFilter: "blur(16px)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: "16px", padding: "16px 20px",
-              width: 200,
-              animation: "float 4.5s ease-in-out infinite",
-              boxShadow: "0 16px 40px rgba(0,0,0,0.3)",
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-                <div style={{ width: 32, height: 36, background: "linear-gradient(135deg, #EF4444, #DC2626)", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>📄</div>
-                <div>
-                  <div style={{ fontSize: "12px", fontWeight: 600, color: "white" }}>Physics.pdf</div>
-                  <div style={{ fontSize: "10px", color: "#64748B" }}>Chapter 5 · 42 pages</div>
-                </div>
-              </div>
-              <div style={{ height: 4, background: "rgba(255,255,255,0.1)", borderRadius: 2, overflow: "hidden" }}>
-                <div style={{ width: "75%", height: "100%", background: "linear-gradient(90deg, #2563EB, #3B82F6)", borderRadius: 2 }} />
-              </div>
-              <div style={{ fontSize: "10px", color: "#94A3B8", marginTop: 6 }}>75% processed</div>
-            </div>
-
-            {/* Central card */}
-            <div style={{
-              position: "absolute", top: "50%", left: "50%",
-              transform: "translate(-50%, -50%)",
-              background: "rgba(255,255,255,0.06)", backdropFilter: "blur(20px)",
-              border: "1px solid rgba(255,255,255,0.15)",
-              borderRadius: "24px", padding: "28px",
-              width: 280,
-              boxShadow: "0 24px 60px rgba(0,0,0,0.4)",
-            }}>
-              <div style={{ fontSize: "13px", color: "#64748B", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", animation: "pulse-ring 1.5s ease-out infinite" }} />
-                AI Analyzing...
-              </div>
-              {features.map((f, i) => (
-                <div key={f.label} style={{
-                  padding: "10px 14px",
-                  borderRadius: "10px",
-                  background: activeFeature === i ? "rgba(37,99,235,0.2)" : "rgba(255,255,255,0.04)",
-                  border: `1px solid ${activeFeature === i ? "rgba(37,99,235,0.4)" : "rgba(255,255,255,0.06)"}`,
-                  marginBottom: "8px",
-                  display: "flex", alignItems: "center", gap: "10px",
-                  transition: "all 0.3s ease",
-                  cursor: "pointer",
-                }} onClick={() => setActiveFeature(i)}>
-                  <span style={{ fontSize: "18px" }}>{f.icon}</span>
-                  <div>
-                    <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 600, color: activeFeature === i ? "#FFFFFF" : "#94A3B8" }}>{f.label}</div>
-                    {activeFeature === i && <div style={{ fontSize: "11px", color: "#64748B", marginTop: "2px" }}>{f.desc}</div>}
-                  </div>
-                  {activeFeature === i && <div style={{ marginLeft: "auto", width: 6, height: 6, borderRadius: "50%", background: "#F59E0B" }} />}
-                </div>
-              ))}
-            </div>
-
-            {/* Floating chat bubble */}
-            <div style={{
-              position: "absolute", bottom: "12%", right: "0%",
-              background: "rgba(245,158,11,0.12)", backdropFilter: "blur(16px)",
-              border: "1px solid rgba(245,158,11,0.25)",
-              borderRadius: "16px", padding: "14px 18px",
-              width: 220,
-              animation: "float2 5s ease-in-out infinite",
-              boxShadow: "0 16px 40px rgba(0,0,0,0.2)",
-            }}>
-              <div style={{ fontSize: "12px", color: "#F59E0B", marginBottom: "6px", fontWeight: 500 }}>💬 Asked Saarthi</div>
-              <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", lineHeight: 1.5 }}>"What is Newton's 2nd law?"</div>
-              <div style={{ fontSize: "12px", color: "#94A3B8", marginTop: "8px", lineHeight: 1.5, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "8px" }}>
-                Force equals mass times acceleration: <strong style={{ color: "white" }}>F = ma</strong>
-              </div>
-            </div>
-
-            {/* Top right badge */}
-            <div style={{
-              position: "absolute", top: "5%", right: "3%",
-              background: "linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.08))",
-              border: "1px solid rgba(245,158,11,0.3)",
-              borderRadius: "12px", padding: "12px 16px",
-              animation: "float 3.8s ease-in-out infinite 1s",
-            }}>
-              <div style={{ fontSize: "22px", textAlign: "center", marginBottom: "4px" }}>🃏</div>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "12px", fontWeight: 700, color: "#F59E0B", textAlign: "center" }}>12 Flashcards</div>
-              <div style={{ fontSize: "10px", color: "#64748B", textAlign: "center" }}>Generated just now</div>
-            </div>
+        {/* Floating PDF pills — top-left */}
+        <div className="absolute top-[12%] left-[3%] hidden lg:flex items-center gap-2.5 bg-white rounded-2xl px-4 py-3 shadow-[0_8px_28px_rgba(10,22,40,0.10)] border border-slate-100 animate-float">
+          <div className="w-9 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-base leading-none">📄</div>
+          <div>
+            <p className="font-syne font-semibold text-[13px] text-navy leading-none mb-0.5">Physics.pdf</p>
+            <p className="font-inter text-[11px] text-slate-400">42 pages</p>
           </div>
         </div>
-      </section>
 
-      {/* FEATURES SECTION */}
-      <section id="features" style={{
-        padding: "100px 5%",
-        background: "#F8FAFC",
-      }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "64px" }}>
-            <div style={{
-              display: "inline-flex", padding: "6px 16px", borderRadius: "100px",
-              background: "#EFF6FF", border: "1px solid #BFDBFE",
-              fontFamily: "'Inter', sans-serif", fontSize: "13px", color: "#2563EB", fontWeight: 500,
-              marginBottom: "20px",
-            }}>Features</div>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "42px", fontWeight: 800, color: "#0A1628", marginBottom: "16px" }}>
-              Everything you need to{" "}
-              <span style={{
-                background: "linear-gradient(135deg, #2563EB, #3B82F6)",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-              }}>ace your studies</span>
-            </h2>
-            <p style={{ fontSize: "17px", color: "#64748B", maxWidth: 500, margin: "0 auto" }}>
-              Five powerful AI tools, one simple upload. Transform the way you learn.
-            </p>
+        {/* Floating PDF pill — top-right area (Today's Tasks widget) */}
+        <div className="absolute top-[13%] right-[17%] hidden xl:block bg-white rounded-2xl px-5 py-4 shadow-[0_8px_28px_rgba(10,22,40,0.10)] border border-slate-100 animate-float-alt"
+             style={{animationDelay:"0.8s"}}>
+          <p className="font-syne font-bold text-[11px] text-slate-400 mb-2.5 tracking-wider">TODAY'S TASKS</p>
+          {[["💬 Chat with PDF","87%","bg-blue"],["📝 Generate Quiz","62%","bg-yellow"]].map(([lbl,pct,col])=>(
+            <div key={lbl} className="mb-2">
+              <div className="flex justify-between mb-1">
+                <span className="font-inter text-[12px] text-navy">{lbl}</span>
+                <span className="font-inter text-[11px] text-slate-400">{pct}</span>
+              </div>
+              <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden w-[180px]">
+                <div className={`h-full ${col} rounded-full`} style={{width:pct}} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Floating flashcard badge — bottom-left */}
+        <div className="absolute bottom-[22%] left-[14%] hidden xl:block bg-white rounded-2xl px-4 py-3 shadow-[0_8px_28px_rgba(10,22,40,0.10)] border border-slate-100 animate-float"
+             style={{animationDelay:"1.5s"}}>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-lg leading-none">🃏</span>
+            <span className="font-syne font-bold text-[13px] text-navy">12 Flashcards</span>
+          </div>
+          <p className="font-inter text-[11px] text-slate-400">Generated just now</p>
+        </div>
+
+        {/* Powered-by badge — bottom-right */}
+        <div className="absolute bottom-[20%] right-[13%] hidden xl:flex flex-col items-center gap-2 bg-white rounded-2xl px-5 py-4 shadow-[0_8px_28px_rgba(10,22,40,0.10)] border border-slate-100 animate-float-alt"
+             style={{animationDelay:"0.3s"}}>
+          <p className="font-syne font-bold text-[11px] text-slate-400 tracking-wider">POWERED BY</p>
+          <div className="flex gap-2 text-2xl">🤖✨📡</div>
+          <p className="font-inter text-[11px] text-slate-500">Google Gemini AI</p>
+        </div>
+
+        {/* Central text */}
+        <div className="relative z-10 text-center max-w-[760px]">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow/10 border border-yellow/30 mb-7 animate-fade-up">
+            <span className="text-[12px]">✨</span>
+            <span className="font-inter text-[13px] font-medium text-yellow-dark">AI-Powered Study Companion</span>
           </div>
 
-          <div style={{
-            display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px",
-          }}>
-            {[
-              { icon: "💬", title: "Chat with PDF", desc: "Have a real conversation with your document. Ask follow-up questions, request clarifications, and extract exactly what you need.", color: "#EFF6FF", accent: "#2563EB" },
-              { icon: "📝", title: "Smart Quiz", desc: "Instantly generate a quiz from your uploaded PDF. Test your understanding with MCQs tailored to the content.", color: "#FEF3C7", accent: "#D97706" },
-              { icon: "🃏", title: "Flashcards", desc: "Transform key concepts into bite-sized flashcard decks. Review, flip, and master your material efficiently.", color: "#F0FDF4", accent: "#16A34A" },
-              { icon: "📊", title: "Summary", desc: "Get a clean, structured summary of any document in seconds. Skip the fluff, get straight to what matters.", color: "#FDF4FF", accent: "#9333EA" },
-              { icon: "✨", title: "Generate Notes", desc: "Turn raw PDF text into well-organized, readable notes formatted for your study style.", color: "#FFF7ED", accent: "#EA580C" },
-            ].map((f, i) => (
-              <div key={f.title} style={{
-                background: "white",
-                borderRadius: "20px",
-                padding: "32px",
-                border: "1.5px solid #F1F5F9",
-                transition: "all 0.3s ease",
-                cursor: "default",
-                position: "relative",
-                overflow: "hidden",
-              }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = "translateY(-6px)";
-                  e.currentTarget.style.boxShadow = "0 20px 50px rgba(10,22,40,0.1)";
-                  e.currentTarget.style.borderColor = f.accent + "40";
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "none";
-                  e.currentTarget.style.borderColor = "#F1F5F9";
-                }}
-              >
-                <div style={{
-                  width: 56, height: 56, borderRadius: "16px",
-                  background: f.color,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "26px", marginBottom: "20px",
-                }}>{f.icon}</div>
-                <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 700, color: "#0A1628", marginBottom: "12px" }}>{f.title}</h3>
-                <p style={{ fontSize: "15px", color: "#64748B", lineHeight: 1.7 }}>{f.desc}</p>
+          <h1 className="font-syne font-extrabold leading-[1.08] mb-6 animate-fade-up delay-1"
+              style={{fontSize:"clamp(42px,7vw,80px)"}}>
+            Upload, ask,{" "}
+            <span className="text-slate-300">and ace</span>
+            <br />
+            <span className="bg-gradient-to-r from-blue to-blue-dark bg-clip-text text-transparent">
+              every exam
+            </span>
+          </h1>
+
+          <p className="font-inter text-[18px] leading-relaxed text-slate-500 max-w-[540px] mx-auto mb-10 animate-fade-up delay-2">
+            Turn any PDF into quizzes, flashcards, summaries, notes, and a smart chat — all in one place.
+          </p>
+
+          <div className="flex items-center justify-center gap-4 mb-14 animate-fade-up delay-3">
+            <Link to="/register"
+                  className="px-8 py-4 rounded-[13px] bg-gradient-to-br from-yellow to-yellow-dark font-syne font-bold text-[16px] text-navy no-underline shadow-[0_8px_28px_rgba(245,158,11,0.32)] hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(245,158,11,0.42)] transition-all duration-250">
+              Get free demo →
+            </Link>
+            <a href="#how-it-works"
+               className="px-7 py-4 rounded-[13px] border-2 border-slate-200 font-syne font-semibold text-[16px] text-slate-600 no-underline bg-white hover:border-blue hover:text-blue transition-all duration-200">
+              How it works
+            </a>
+          </div>
+
+          <div className="flex justify-center gap-12 animate-fade-up delay-4">
+            {[["10×","Faster studying"],["5+","AI-powered tools"],["100%","Your data, private"]].map(([v,l])=>(
+              <div key={l} className="text-center">
+                <p className="font-syne font-extrabold text-[28px] text-blue">{v}</p>
+                <p className="font-inter text-[13px] text-slate-400 mt-0.5">{l}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section id="how-it-works" style={{ padding: "100px 5%", background: "#ffffff" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "64px" }}>
-            <div style={{
-              display: "inline-flex", padding: "6px 16px", borderRadius: "100px",
-              background: "#FEF3C7", border: "1px solid #FDE68A",
-              fontFamily: "'Inter', sans-serif", fontSize: "13px", color: "#D97706", fontWeight: 500,
-              marginBottom: "20px",
-            }}>How It Works</div>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "42px", fontWeight: 800, color: "#0A1628" }}>
+      {/* ── FEATURES ── */}
+      <section id="features" className="py-28 px-[5%] bg-white">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 font-inter text-[13px] text-blue font-medium mb-5">
+              Features
+            </div>
+            <h2 className="font-syne font-extrabold text-[42px] text-navy mb-4">
+              Everything you need to{" "}
+              <span className="bg-gradient-to-r from-blue to-blue-dark bg-clip-text text-transparent">ace your studies</span>
+            </h2>
+            <p className="font-inter text-[17px] text-slate-500 max-w-[480px] mx-auto">
+              Five powerful AI tools. One simple upload.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {FEATURES.map(f => (
+              <div key={f.title}
+                   className="group bg-white rounded-[20px] p-8 border-[1.5px] border-slate-100 hover:-translate-y-1.5 hover:shadow-[0_20px_48px_rgba(10,22,40,0.09)] hover:border-blue-100 transition-all duration-300 cursor-default">
+                <div className={`w-14 h-14 rounded-2xl ${f.bg} flex items-center justify-center text-2xl mb-5`}>{f.icon}</div>
+                <h3 className="font-syne font-bold text-[20px] text-navy mb-3">{f.title}</h3>
+                <p className="font-inter text-[15px] text-slate-500 leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section id="how-it-works" className="py-28 px-[5%] bg-slate-50">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex px-4 py-1.5 rounded-full bg-yellow/10 border border-yellow/30 font-inter text-[13px] text-yellow-dark font-medium mb-5">
+              How It Works
+            </div>
+            <h2 className="font-syne font-extrabold text-[42px] text-navy">
               Three steps to smarter studying
             </h2>
           </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "32px" }}>
-            {howItWorks.map((item, i) => (
-              <div key={item.step} style={{ textAlign: "center", padding: "40px 28px", position: "relative" }}>
-                <div style={{
-                  width: 80, height: 80, borderRadius: "24px",
-                  background: i === 1 ? "linear-gradient(135deg, #F59E0B, #D97706)" : "linear-gradient(135deg, #0A1628, #1E3A5F)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "32px", margin: "0 auto 24px",
-                  boxShadow: i === 1 ? "0 12px 32px rgba(245,158,11,0.3)" : "0 12px 32px rgba(10,22,40,0.2)",
-                }}>{item.icon}</div>
-                <div style={{
-                  fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700,
-                  color: i === 1 ? "#D97706" : "#2563EB",
-                  letterSpacing: "0.1em", marginBottom: "12px",
-                }}>STEP {item.step}</div>
-                <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 700, color: "#0A1628", marginBottom: "12px" }}>{item.title}</h3>
-                <p style={{ fontSize: "15px", color: "#64748B", lineHeight: 1.7 }}>{item.desc}</p>
-                {i < 2 && <div style={{
-                  position: "absolute", top: "68px", right: "-16px",
-                  fontSize: "24px", color: "#E2E8F0",
-                  display: "none",
-                }}>→</div>}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {STEPS.map((s,i) => (
+              <div key={s.n} className="text-center px-6 py-10">
+                <div className={`w-20 h-20 rounded-[22px] mx-auto mb-6 flex items-center justify-center text-[32px]
+                  ${s.yellow
+                    ? "bg-gradient-to-br from-yellow to-yellow-dark shadow-[0_12px_32px_rgba(245,158,11,0.28)]"
+                    : "bg-gradient-to-br from-navy to-navy-mid shadow-[0_12px_32px_rgba(10,22,40,0.20)]"
+                  }`}>{s.icon}</div>
+                <p className={`font-syne text-[12px] font-bold tracking-widest mb-3 ${s.yellow ? "text-yellow" : "text-blue"}`}>
+                  STEP {s.n}
+                </p>
+                <h3 className="font-syne font-bold text-[22px] text-navy mb-3">{s.title}</h3>
+                <p className="font-inter text-[15px] text-slate-500 leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
-      <section id="testimonials" style={{
-        padding: "100px 5%",
-        background: "linear-gradient(160deg, #0A1628 0%, #0F2044 100%)",
-      }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "64px" }}>
-            <div style={{
-              display: "inline-flex", padding: "6px 16px", borderRadius: "100px",
-              background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)",
-              fontFamily: "'Inter', sans-serif", fontSize: "13px", color: "#F59E0B", fontWeight: 500,
-              marginBottom: "20px",
-            }}>Testimonials</div>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "42px", fontWeight: 800, color: "white" }}>
-              Students love Saarthi
-            </h2>
+      {/* ── TESTIMONIALS ── */}
+      <section id="testimonials" className="py-28 px-[5%] bg-navy">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex px-4 py-1.5 rounded-full bg-yellow/10 border border-yellow/30 font-inter text-[13px] text-yellow font-medium mb-5">
+              Testimonials
+            </div>
+            <h2 className="font-syne font-extrabold text-[42px] text-white">Students love Saarthi</h2>
           </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px" }}>
-            {testimonials.map((t) => (
-              <div key={t.name} style={{
-                background: "rgba(255,255,255,0.05)", backdropFilter: "blur(16px)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "20px", padding: "32px",
-                transition: "all 0.3s ease",
-              }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.borderColor = "rgba(245,158,11,0.3)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
-              >
-                <div style={{ fontSize: "24px", color: "#F59E0B", marginBottom: "16px" }}>★★★★★</div>
-                <p style={{ fontSize: "15px", color: "#CBD5E1", lineHeight: 1.75, marginBottom: "24px", fontStyle: "italic" }}>"{t.text}"</p>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <div style={{
-                    width: 42, height: 42, borderRadius: "50%",
-                    background: "linear-gradient(135deg, #2563EB, #1D4ED8)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontFamily: "'Syne', sans-serif", fontSize: "14px", fontWeight: 700, color: "white",
-                  }}>{t.avatar}</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {TESTIMONIALS.map(t => (
+              <div key={t.name}
+                   className="glass rounded-[20px] p-8 hover:bg-white/[0.09] hover:border-yellow/30 transition-all duration-300">
+                <p className="text-yellow text-[22px] mb-4">★★★★★</p>
+                <p className="font-inter text-[15px] text-slate-300 leading-[1.75] mb-6 italic">"{t.text}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue to-blue-dark flex items-center justify-center font-syne font-bold text-[14px] text-white">
+                    {t.init}
+                  </div>
                   <div>
-                    <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: "14px", color: "white" }}>{t.name}</div>
-                    <div style={{ fontSize: "12px", color: "#64748B" }}>{t.role}</div>
+                    <p className="font-syne font-semibold text-[14px] text-white">{t.name}</p>
+                    <p className="font-inter text-[12px] text-slate-500">{t.role}</p>
                   </div>
                 </div>
               </div>
@@ -487,74 +254,37 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* CTA SECTION */}
-      <section style={{
-        padding: "100px 5%",
-        background: "#ffffff",
-        textAlign: "center",
-      }}>
-        <div style={{ maxWidth: 700, margin: "0 auto" }}>
-          <div style={{
-            width: 72, height: 72, borderRadius: "20px",
-            background: "linear-gradient(135deg, #2563EB, #1D4ED8)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "32px", margin: "0 auto 28px",
-            boxShadow: "0 16px 40px rgba(37,99,235,0.3)",
-          }}>📚</div>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "48px", fontWeight: 800, color: "#0A1628", marginBottom: "20px" }}>
-            Ready to study smarter?
-          </h2>
-          <p style={{ fontSize: "18px", color: "#64748B", lineHeight: 1.7, marginBottom: "40px" }}>
-            Join thousands of students already using Saarthi to understand their study materials faster and deeper.
+      {/* ── CTA ── */}
+      <section className="py-28 px-[5%] bg-white text-center">
+        <div className="max-w-[640px] mx-auto">
+          <div className="w-[72px] h-[72px] rounded-[20px] bg-gradient-to-br from-blue to-blue-dark flex items-center justify-center text-[32px] mx-auto mb-7 shadow-[0_16px_40px_rgba(37,99,235,0.28)] leading-none">📚</div>
+          <h2 className="font-syne font-extrabold text-[48px] text-navy mb-5">Ready to study smarter?</h2>
+          <p className="font-inter text-[18px] text-slate-500 leading-relaxed mb-10">
+            Join thousands of students using Saarthi to understand study material faster and deeper.
           </p>
-          <Link to="/register" style={{
-            display: "inline-block",
-            padding: "18px 48px",
-            borderRadius: "14px",
-            background: "linear-gradient(135deg, #F59E0B, #D97706)",
-            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "18px",
-            color: "#0A1628", textDecoration: "none",
-            boxShadow: "0 12px 40px rgba(245,158,11,0.35)",
-            transition: "all 0.25s ease",
-          }}
-            onMouseEnter={e => { e.target.style.transform = "translateY(-3px)"; e.target.style.boxShadow = "0 18px 50px rgba(245,158,11,0.45)"; }}
-            onMouseLeave={e => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "0 12px 40px rgba(245,158,11,0.35)"; }}
-          >
+          <Link to="/register"
+                className="inline-block px-12 py-5 rounded-[14px] bg-gradient-to-br from-yellow to-yellow-dark font-syne font-bold text-[18px] text-navy no-underline shadow-[0_12px_36px_rgba(245,158,11,0.32)] hover:-translate-y-1 hover:shadow-[0_18px_48px_rgba(245,158,11,0.42)] transition-all duration-250">
             Start for Free →
           </Link>
-          <p style={{ fontSize: "13px", color: "#94A3B8", marginTop: "16px" }}>No credit card required · Free forever plan</p>
+          <p className="font-inter text-[13px] text-slate-400 mt-4">No credit card required · Free forever plan</p>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer style={{
-        background: "#0A1628",
-        padding: "48px 5% 32px",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-      }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: "8px",
-              background: "linear-gradient(135deg, #2563EB, #1D4ED8)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "16px",
-            }}>📚</div>
-            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "20px", color: "#FFFFFF" }}>Saarthi</span>
+      {/* ── FOOTER ── */}
+      <footer className="bg-navy border-t border-white/[0.06] px-[5%] py-12">
+        <div className="max-w-[1200px] mx-auto flex flex-wrap items-center justify-between gap-5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-[8px] bg-gradient-to-br from-blue to-blue-dark flex items-center justify-center text-base leading-none">📚</div>
+            <span className="font-syne font-extrabold text-[20px] text-white">Saarthi</span>
           </div>
-          <p style={{ color: "#475569", fontSize: "14px" }}>© 2025 Saarthi. Built with ❤️ for students.</p>
-          <div style={{ display: "flex", gap: "24px" }}>
-            {["Privacy", "Terms", "Contact"].map(item => (
-              <a key={item} href="#" style={{ color: "#475569", fontSize: "14px", textDecoration: "none", transition: "color 0.2s" }}
-                onMouseEnter={e => e.target.style.color = "#F59E0B"}
-                onMouseLeave={e => e.target.style.color = "#475569"}
-              >{item}</a>
+          <p className="font-inter text-[14px] text-slate-500">© 2025 Saarthi · Built with ❤️ for students</p>
+          <div className="flex gap-6">
+            {["Privacy","Terms","Contact"].map(l=>(
+              <a key={l} href="#" className="font-inter text-[14px] text-slate-500 no-underline hover:text-yellow transition-colors duration-200">{l}</a>
             ))}
           </div>
         </div>
       </footer>
     </div>
   );
-};
-
-export default LandingPage;
+}
