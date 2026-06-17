@@ -30,7 +30,7 @@ export default function RegisterPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Registration failed");
       setSuccess(true);
-      setTimeout(()=>navigate("/login"), 1800);
+      setTimeout(()=>navigate("/dashboard"), 1800);
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
   };
