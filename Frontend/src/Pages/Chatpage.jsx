@@ -1,76 +1,209 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import API from "../services/api.js";
+import { useParams, useNavigate } from "react-router-dom";
+import API from "../services/api";
 
-const TypingDots = () => (
-  <div className="flex items-center gap-1 px-4 py-3">
-    {[0, 1, 2].map(i => (
-      <span key={i} className="w-2 h-2 rounded-full bg-blue/40 animate-bounce"
-        style={{ animationDelay: `${i * 0.15}s` }} />
-    ))}
-  </div>
+// ── icons (inline SVGs, zero deps) ──────────────────────────────────────────
+const SendIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+  </svg>
+);
+const BackIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
+const BookIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+  </svg>
+);
+const SpinnerIcon = () => (
+  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <circle cx="12" cy="12" r="10" strokeOpacity={0.25} />
+    <path d="M12 2a10 10 0 0 1 10 10" />
+  </svg>
 );
 
-export default function ChatPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
+// ── helpers ──────────────────────────────────────────────────────────────────
+function parsePageRef(text) {
+  // detect "page N" or "Page N" references in AI response
+  const match = text.match(/page\s+(\d+)/i);
+  return match ? parseInt(match[1], 10) : null;
+}
 
-  // doc passed via navigate state: { _id, fileName }
-  const doc = location.state?.doc || null;
+function MessageBubble({ msg }) {
+  const isUser = msg.role === "user";
+  return (
+    <div className={`flex gap-2 ${isUser ? "justify-end" : "justify-start"}`}>
+      {!isUser && (
+        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center mt-0.5">
+          <span className="text-xs font-bold text-indigo-300">AI</span>
+        </div>
+      )}
+      <div
+        className={`max-w-[78%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+          isUser
+            ? "bg-indigo-600 text-white rounded-br-sm"
+            : "bg-white/5 border border-white/8 text-slate-200 rounded-bl-sm"
+        }`}
+      >
+        {msg.content}
+      </div>
+    </div>
+  );
+}
+
+function TypingIndicator() {
+  return (
+    <div className="flex gap-2 justify-start">
+      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center">
+        <span className="text-xs font-bold text-indigo-300">AI</span>
+      </div>
+      <div className="bg-white/5 border border-white/8 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center">
+        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+      </div>
+    </div>
+  );
+}
+
+// ── PDF Viewer ───────────────────────────────────────────────────────────────
+function PDFViewer({ pages, activePage }) {
+  const pageRefs = useRef({});
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (activePage && pageRefs.current[activePage]) {
+      pageRefs.current[activePage].scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [activePage]);
+
+  if (!pages || pages.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center text-slate-500 text-sm">
+        <div className="text-center space-y-2">
+          <BookIcon />
+          <p>No content extracted</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={containerRef} className="h-full overflow-y-auto px-6 py-6 space-y-6 scroll-smooth">
+      {pages.map((page) => (
+        <div
+          key={page.pageNumber}
+          ref={(el) => (pageRefs.current[page.pageNumber] = el)}
+          className={`rounded-xl border transition-all duration-500 ${
+            activePage === page.pageNumber
+              ? "border-indigo-500/60 bg-indigo-500/5 shadow-[0_0_0_1px_rgba(99,102,241,0.3)]"
+              : "border-white/8 bg-white/[0.03]"
+          }`}
+        >
+          {/* page header */}
+          <div className="flex items-center gap-2 px-4 py-2 border-b border-white/8">
+            <span
+              className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                activePage === page.pageNumber
+                  ? "bg-indigo-500/30 text-indigo-300"
+                  : "bg-white/8 text-slate-500"
+              }`}
+            >
+              Page {page.pageNumber}
+            </span>
+          </div>
+          {/* page content */}
+          <div className="px-4 py-4 text-sm text-slate-300 leading-7 font-mono whitespace-pre-wrap break-words">
+            {page.content}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Main Component ───────────────────────────────────────────────────────────
+export default function ChatPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [doc, setDoc] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content: doc
-        ? `Hi! I've read **${doc.fileName}**. Ask me anything about it — concepts, summaries, page-specific questions, anything.`
-        : "No document selected. Go back to your dashboard and open a document first.",
+      content: "Hi! I've read your document. Ask me anything about it — I'll point you to the right page.",
     },
   ]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const bottomRef = useRef(null);
+  const [sending, setSending] = useState(false);
+  const [activePage, setActivePage] = useState(null);
+
+  const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
+  // fetch document
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+    const fetchDoc = async () => {
+      try {
+        const res = await API.get(`/documents/${id}`);
+        setDoc(res.data.document || res.data);
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || "Failed to load document");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDoc();
+  }, [id]);
 
+  // auto-scroll chat
   useEffect(() => {
-    if (!doc) return;
-    inputRef.current?.focus();
-  }, []);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, sending]);
 
   const sendMessage = async () => {
     const text = input.trim();
-    if (!text || loading || !doc) return;
+    if (!text || sending) return;
 
     const userMsg = { role: "user", content: text };
-    const newMessages = [...messages, userMsg];
-    setMessages(newMessages);
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
-    setLoading(true);
+    setSending(true);
+
+    // build history for context (exclude the greeting)
+    const history = messages
+      .slice(1)
+      .map((m) => ({ role: m.role, content: m.content }));
 
     try {
-      const history = newMessages
-        .slice(1) // skip the greeting
-        .slice(-10) // keep last 10 turns for context window
-        .map(m => ({ role: m.role, content: m.content }));
-
-      const { data } = await API.post("/chat", {
-        docId: doc._id,
+      // ✅ FIX: docId is a URL param, message + history go in body
+      const res = await API.post(`/chat/${id}`, {
         message: text,
-        history: history.slice(0, -1), // exclude the message we just added
+        history,
       });
 
-      setMessages(prev => [...prev, { role: "assistant", content: data.reply }]);
+      const reply = res.data.reply || res.data.message || "No response.";
+      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+
+      // highlight referenced page if AI mentions one
+      const page = parsePageRef(reply);
+      if (page) setActivePage(page);
     } catch (err) {
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: "Something went wrong. Please try again.",
-        error: true,
-      }]);
+      const errMsg = err.response?.data?.message || err.message || "Something went wrong.";
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: `⚠️ ${errMsg}` },
+      ]);
     } finally {
-      setLoading(false);
+      setSending(false);
       inputRef.current?.focus();
     }
   };
@@ -82,112 +215,118 @@ export default function ChatPage() {
     }
   };
 
-  const renderContent = (text) => {
-    // Bold markdown **text**
-    return text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
-      part.startsWith("**") && part.endsWith("**")
-        ? <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
-        : part
-    );
-  };
-
-  return (
-    <div className="min-h-screen bg-offwhite dot-bg flex flex-col">
-
-      {/* ── NAVBAR ── */}
-      <nav className="sticky top-0 z-50 h-[66px] flex items-center justify-between px-[5%] bg-white/95 backdrop-blur-xl shadow-[0_1px_20px_rgba(10,22,40,0.07)] border-b border-slate-100 shrink-0">
-        <Link to="/" className="flex items-center gap-2.5 no-underline">
-          <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-blue to-blue-dark flex items-center justify-center text-lg leading-none">📚</div>
-          <span className="font-syne font-extrabold text-[22px] text-navy">Saarthi</span>
-        </Link>
-
-        {doc && (
-          <div className="hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-100 max-w-[340px]">
-            <span className="text-sm shrink-0">📄</span>
-            <span className="font-inter text-[12.5px] text-blue-700 font-medium truncate">{doc.fileName}</span>
-          </div>
-        )}
-
-        <button onClick={() => navigate("/dashboard")}
-          className="px-5 py-2 rounded-[10px] border border-slate-200 font-syne font-semibold text-[14px] text-navy bg-white hover:border-blue-300 hover:text-blue transition-all duration-200">
-          ← Dashboard
-        </button>
-      </nav>
-
-      {/* ── CHAT AREA ── */}
-      <div className="flex-1 overflow-y-auto px-[5%] py-8">
-        <div className="max-w-[760px] mx-auto flex flex-col gap-5">
-
-          {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              {msg.role === "assistant" && (
-                <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-blue to-blue-dark flex items-center justify-center text-sm shrink-0 mr-3 mt-0.5">📚</div>
-              )}
-
-              <div className={`max-w-[82%] px-5 py-3.5 rounded-2xl font-inter text-[14.5px] leading-relaxed
-                ${msg.role === "user"
-                  ? "bg-gradient-to-br from-blue to-blue-dark text-white rounded-br-sm shadow-[0_4px_14px_rgba(37,99,235,0.22)]"
-                  : msg.error
-                    ? "bg-red-50 border border-red-100 text-red-700 rounded-bl-sm"
-                    : "bg-white border border-slate-100 text-navy rounded-bl-sm shadow-[0_4px_14px_rgba(10,22,40,0.06)]"
-                }`}>
-                {renderContent(msg.content)}
-              </div>
-
-              {msg.role === "user" && (
-                <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-yellow to-yellow-dark flex items-center justify-center text-sm shrink-0 ml-3 mt-0.5 font-syne font-bold text-navy text-[11px]">
-                  YOU
-                </div>
-              )}
-            </div>
-          ))}
-
-          {loading && (
-            <div className="flex justify-start">
-              <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-blue to-blue-dark flex items-center justify-center text-sm shrink-0 mr-3 mt-0.5">📚</div>
-              <div className="bg-white border border-slate-100 rounded-2xl rounded-bl-sm shadow-[0_4px_14px_rgba(10,22,40,0.06)]">
-                <TypingDots />
-              </div>
-            </div>
-          )}
-
-          <div ref={bottomRef} />
+  // ── Loading / Error states ───────────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="h-screen bg-[#0d0f14] flex items-center justify-center">
+        <div className="flex items-center gap-3 text-slate-400">
+          <SpinnerIcon />
+          <span className="text-sm">Loading document…</span>
         </div>
       </div>
+    );
+  }
 
-      {/* ── INPUT BAR ── */}
-      <div className="shrink-0 px-[5%] py-5 bg-white/90 backdrop-blur-xl border-t border-slate-100 shadow-[0_-1px_20px_rgba(10,22,40,0.05)]">
-        <div className="max-w-[760px] mx-auto flex items-end gap-3">
-          <div className="flex-1 relative">
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={doc ? "Ask anything about this document…" : "No document selected"}
-              disabled={!doc || loading}
-              rows={1}
-              className="w-full resize-none px-5 py-3.5 pr-4 rounded-[14px] border-[1.5px] border-slate-200 bg-white font-inter text-[14.5px] text-navy placeholder:text-slate-400 focus:outline-none focus:border-blue transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ minHeight: "52px", maxHeight: "140px" }}
-              onInput={e => {
-                e.target.style.height = "auto";
-                e.target.style.height = Math.min(e.target.scrollHeight, 140) + "px";
-              }}
-            />
-          </div>
-
-          <button onClick={sendMessage} disabled={!input.trim() || loading || !doc}
-            className="shrink-0 w-[52px] h-[52px] rounded-[14px] bg-gradient-to-br from-blue to-blue-dark flex items-center justify-center border-none cursor-pointer shadow-[0_4px_14px_rgba(37,99,235,0.28)] hover:-translate-y-0.5 hover:shadow-[0_8px_22px_rgba(37,99,235,0.38)] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">
-            {loading
-              ? <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-              : <span className="text-white text-lg">↑</span>
-            }
+  if (error) {
+    return (
+      <div className="h-screen bg-[#0d0f14] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-red-400 text-sm">{error}</p>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="text-indigo-400 text-sm hover:text-indigo-300 underline"
+          >
+            ← Back to dashboard
           </button>
         </div>
+      </div>
+    );
+  }
 
-        <p className="text-center font-inter text-[11px] text-slate-400 mt-2.5">
-          Press Enter to send · Shift+Enter for new line
-        </p>
+  const pages = doc?.extractedText || [];
+
+  // ── Render ───────────────────────────────────────────────────────────────
+  return (
+    <div className="h-screen bg-[#0d0f14] text-white flex flex-col overflow-hidden">
+
+      {/* ── Top bar ── */}
+      <header className="flex items-center gap-3 px-5 py-3 border-b border-white/8 bg-[#0d0f14]/80 backdrop-blur-sm flex-shrink-0">
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors text-sm"
+        >
+          <BackIcon />
+          Back
+        </button>
+        <div className="w-px h-4 bg-white/10" />
+        <div className="flex items-center gap-2 min-w-0">
+          <BookIcon />
+          <span className="text-sm font-medium text-slate-200 truncate">
+            {doc?.originalName || doc?.title || "Document"}
+          </span>
+        </div>
+        {activePage && (
+          <span className="ml-auto text-xs px-2 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
+            Viewing page {activePage}
+          </span>
+        )}
+      </header>
+
+      {/* ── Main split layout ── */}
+      <div className="flex flex-1 min-h-0">
+
+        {/* LEFT — Chat panel */}
+        <div className="w-[42%] min-w-[320px] flex flex-col border-r border-white/8">
+
+          {/* messages */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+            {messages.map((msg, i) => (
+              <MessageBubble key={i} msg={msg} />
+            ))}
+            {sending && <TypingIndicator />}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* input */}
+          <div className="flex-shrink-0 px-4 py-4 border-t border-white/8 bg-[#0d0f14]">
+            <div className="flex items-end gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus-within:border-indigo-500/50 transition-colors">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask about your document…"
+                rows={1}
+                className="flex-1 bg-transparent resize-none text-sm text-white placeholder-slate-500 outline-none leading-relaxed max-h-32 overflow-y-auto"
+                style={{ fieldSizing: "content" }}
+                disabled={sending}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!input.trim() || sending}
+                className="flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors mb-0.5"
+              >
+                {sending ? <SpinnerIcon /> : <SendIcon />}
+              </button>
+            </div>
+            <p className="text-center text-xs text-slate-600 mt-2">
+              Enter to send · Shift+Enter for new line
+            </p>
+          </div>
+        </div>
+
+        {/* RIGHT — PDF viewer */}
+        <div className="flex-1 flex flex-col min-w-0 bg-[#0a0c10]">
+          <div className="flex items-center gap-2 px-5 py-2.5 border-b border-white/6 flex-shrink-0">
+            <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">
+              Document · {pages.length} page{pages.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+          <div className="flex-1 min-h-0">
+            <PDFViewer pages={pages} activePage={activePage} />
+          </div>
+        </div>
+
       </div>
     </div>
   );
