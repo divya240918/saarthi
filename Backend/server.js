@@ -5,6 +5,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/userRoutes.js"
 import uploadRoutes from "./routes/uploadRoutes.js";
+import chatRoutes from './routes/chatRoutes.js';
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(cookieParser());
 
 app.use("/api/users", userRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.get('/', (req, res) => {
     res.json({ message: "Server is running"});
