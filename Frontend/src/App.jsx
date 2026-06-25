@@ -4,6 +4,7 @@ import Landing from './Pages/Landing.jsx';
 import Login from './Pages/Login.jsx';
 import Register from './Pages/Register.jsx';
 import Dashboard from './Pages/Dashboard.jsx';
+import ChatPage from './Pages/Chatpage.jsx';
 
 function App() {
   
@@ -14,6 +15,7 @@ function App() {
       <Route path='/login' element={<Login />} />
       <Route path='/register' element={<Register />} />
       <Route path='/dashboard' element={<Dashboard />} />
+      <Route path='/chat' element={<ChatPage />} />
     </Routes>
 
   )
