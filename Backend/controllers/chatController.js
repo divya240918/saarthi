@@ -5,10 +5,11 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export const chatWithPDF = async (req, res) => {
     try {
-        const { docId, messages, history = [] } = req.body;
+        const { message, history = [] } = req.body;
+        const docId = req.params.id;
 
-        if (!docId || !messages) {
-            return res.status(401).json({ message: "Fill Required Fields" });
+        if (!docId || !message ) {
+            return res.status(400).json({ message: "Fill Required Fields" });
         }
 
         const document = await Document.findOne({
@@ -29,7 +30,7 @@ export const chatWithPDF = async (req, res) => {
             .map(p => `[Page ${p.pageNumber}]\n${p.content}`)
             .join("\n\n");
 
-        messages = [
+        const promptMessages = [
             {
                 role: "system",
                 content: `You are Saarthi, an AI study assistant. Answer question strictly based on the pdf content below. If the answer isn't in the document, say so clearly and tell the user a little context of it. Always mention the page number when referencing specific content.
@@ -46,9 +47,9 @@ export const chatWithPDF = async (req, res) => {
             },
         ];
 
-        const completion = await groq.chat.completion.create({
+        const completion = await groq.chat.completions.create({
             model: "llama-3.1-8b-instant",
-            messages,
+            messages: promptMessages,
             max_tokens: 1024,
         });
 

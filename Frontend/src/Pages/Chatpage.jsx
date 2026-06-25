@@ -153,7 +153,7 @@ export default function ChatPage() {
   useEffect(() => {
     const fetchDoc = async () => {
       try {
-        const res = await API.get(`/documents/${id}`);
+        const res = await API.get(`/upload/${id}`);
         setDoc(res.data.document || res.data);
       } catch (err) {
         setError(err.response?.data?.message || err.message || "Failed to load document");
@@ -185,7 +185,8 @@ export default function ChatPage() {
 
     try {
       // ✅ FIX: docId is a URL param, message + history go in body
-      const res = await API.post(`/chat/${docId}`, {
+      const res = await API.post(`/chat/${id}`, {
+        docId: id,
         message: text,
         history,
       });
