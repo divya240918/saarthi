@@ -1,5 +1,5 @@
 import Groq from 'groq-sdk';
-import Document from '../models/Document.js';
+import {Document} from '../models/Document.js';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -29,7 +29,7 @@ export const chatWithPDF = async (req, res) => {
             .map(p => `[Page ${p.pageNumber}]\n${p.content}`)
             .join("\n\n");
 
-        const messages = [
+        messages = [
             {
                 role: "system",
                 content: `You are Saarthi, an AI study assistant. Answer question strictly based on the pdf content below. If the answer isn't in the document, say so clearly and tell the user a little context of it. Always mention the page number when referencing specific content.
