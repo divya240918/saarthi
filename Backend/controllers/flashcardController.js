@@ -1,4 +1,4 @@
-import { Document } from "../models/Document";
+import { Document } from "../models/Document.js";
 import Groq from "groq-sdk";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -21,7 +21,7 @@ export const generateFlashcards = async (req, res) => {
         }
 
         const allPgaes = [...document.extractedText]
-            .sort((a, b) = a.pageNumber - b.pageNumber);
+            .sort((a, b) => a.pageNumber - b.pageNumber);
 
         const chunkSize = 3;
         const chunk = [];
