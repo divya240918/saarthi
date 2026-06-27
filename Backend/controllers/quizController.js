@@ -21,12 +21,26 @@ export const generateQuiz = async (req, res) => {
             return res.status(400).json({ message: "File is still processing" });
         }
 
-        const pdfContext = document.extractedText
+        const allPages = document.extractedText
             .sort((a, b) => a.pageNumber - b.pageNumber)
-            .map(p => `[Page ${p.pageNumber}]\n${p.content}`)
-            .join("\n\n");
 
-        const prompt = `You are a quiz generator. Based on the document below, generate exactly ${count} multiple choice questions.
+        const totalPages = allPages.length;
+
+        const chunkSize = 3;
+        const chunks =[];
+        for(let i = 0; i < allPages.length; i+=chunkSize) {
+            chunks.push(slice(i, i+chunkSize))
+        }
+
+        const questionsPerChunk = Math.max(1, Math.ceil(count / chunks.length));
+        const allQuestions = [];
+        for( chunk of chunks) {
+            const pdfContext = chunk
+            .map(p => `[Page ${p.pageNumber}]\n${p.content.slice(0, 800)}`)
+            .join("\n\n");
+        }
+
+        const prompt = `You are a quiz generator. Based on the excerpt below, generate exactly ${questionsPerChunk} multiple choice questions.
 
 Rules:
 - Each question must have exactly 4 options (A, B, C, D)
@@ -44,7 +58,7 @@ Respond ONLY with a valid JSON array, no markdown, no extra text:
   }
 ]
 
-DOCUMENT:
+DOCUMENT EXCERPT:
 ${pdfContext}`;
 
         const completion = await groq.chat.completions.create({
@@ -55,7 +69,17 @@ ${pdfContext}`;
 
         const raw = completion.choices[0].message.content;
         const clean = raw.replace(/```json|```/g, "").trim();
-        const questions = JSON.parse(clean);
+        
+        try {
+            const questions = JSON.parse(clean);
+            allQuestions.push(...questions);
+        } catch (error) {
+            continue;
+        }
+
+        const shuffled = allQuestions
+            .sort(() => Math.random() - 0.5)
+            .slice(0, count);
 
         return res.status(200).json({ questions });
     } catch (error) {
