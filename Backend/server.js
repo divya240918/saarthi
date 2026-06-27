@@ -7,6 +7,7 @@ import userRoutes from "./routes/userRoutes.js"
 import uploadRoutes from "./routes/uploadRoutes.js";
 import chatRoutes from './routes/chatRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
+import flashcardRoutes from './routes/flashcardRoutes.js';
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/flashcard', flashcardRoutes);
 
 app.get('/', (req, res) => {
     res.json({ message: "Server is running"});
