@@ -20,13 +20,13 @@ export const generateFlashcards = async (req, res) => {
             return res.status(401).json({ message: "Document still processing" });
         }
 
-        const allPgaes = [...document.extractedText]
+        const allPages = [...document.extractedText]
             .sort((a, b) => a.pageNumber - b.pageNumber);
 
         const chunkSize = 3;
         const chunks = [];
-        for (let i = 0; i < allPgaes.length; i += chunkSize) {
-            chunk.push(allPgaes.slice(i, i + chunkSize));
+        for (let i = 0; i < allPages.length; i += chunkSize) {
+            chunks.push(allPgaes.slice(i, i + chunkSize));
         }
 
         const allFlashcards = [];
