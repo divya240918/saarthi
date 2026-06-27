@@ -24,7 +24,7 @@ export const generateFlashcards = async (req, res) => {
             .sort((a, b) => a.pageNumber - b.pageNumber);
 
         const chunkSize = 3;
-        const chunk = [];
+        const chunks = [];
         for (let i = 0; i < allPgaes.length; i += chunkSize) {
             chunk.push(allPgaes.slice(i, i + chunkSize));
         }
