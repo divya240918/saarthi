@@ -25,7 +25,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/quiz', quizRoutes);
-app.use('/api/flashcard', flashcardRoutes);
+app.use('/api/flashcards', flashcardRoutes);
 
 app.get('/', (req, res) => {
     res.json({ message: "Server is running"});

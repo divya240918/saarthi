@@ -19,7 +19,7 @@ function App() {
       <Route path='/dashboard' element={<Dashboard />} />
       <Route path="/chat/:id" element={<ChatPage />} />
       <Route path='/quiz/:id' element={<QuizPage />} />
-      <Route path='/flashcard/:id' element={<FlashcardsPage />} />
+      <Route path='/flashcards/:id' element={<FlashcardsPage />} />
     </Routes>
 
   )
