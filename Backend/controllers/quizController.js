@@ -73,7 +73,7 @@ ${pdfContext}`;
         try {
             const questions = JSON.parse(clean);
             allQuestions.push(...questions);
-        } catch (error) {
+        } catch {
             continue;
         }
 
