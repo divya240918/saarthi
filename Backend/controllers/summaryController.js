@@ -25,51 +25,41 @@ export const generateSummary = async (req, res) => {
 
         const chunkSize = 2;
         const chunks = [];
-        for (let i = 0; i < allPages.length; i += chunkSize) {
-            chunks.push(allPages.slice(i, i + chunkSize));
-        }
+        for (let i = 0; i < chunks.length; i++) {
+            const chunk = chunks[i];
 
-        const chunkSummaries = [];
-
-        for (const chunk of chunks) {
             const pdfContext = chunk
                 .map(p => `[Page ${p.pageNumber}]\n${p.content}`)
                 .join("\n\n");
 
-            const prompt = `You are a document summarizer. Read the following document excerpt and extract the most important points.
+            console.log(`Processing chunk ${i + 1}/${chunks.length}, context length: ${pdfContext.length} chars`);
 
-                STRICT RULES:
-                - Respond ONLY with a raw JSON array of strings
-                - No markdown, no backticks, no explanation, no intro text
-                - Each string should be one complete, informative sentence
-                - Generate between 3 and 5 points
-
-                Example of valid response:
-                ["Point one here.", "Point two here.", "Point three here."]
-
-                DOCUMENT EXCERPT:
-                ${pdfContext}`;
             const completion = await groq.chat.completions.create({
                 model: "llama-3.1-8b-instant",
                 messages: [{ role: "user", content: prompt }],
                 max_tokens: 1024,
-
-            })
+            });
 
             const raw = completion.choices[0].message.content;
+            console.log(`Chunk ${i + 1} raw response:`, raw.slice(0, 200));
+
             const clean = raw.replace(/```json|```/g, "").trim();
 
             try {
                 const points = JSON.parse(clean);
+                console.log(`Chunk ${i + 1} parsed ${points.length} points`);
                 chunkSummaries.push(...points);
-            } catch(e) {
-                console.log("Failed chunk parse:", clean);
+            } catch (e) {
+                console.log(`Chunk ${i + 1} parse FAILED:`, clean.slice(0, 200));
             }
 
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            return res.status(200).json({ summary: chunkSummaries });
+            if (i < chunks.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
         }
+
+        return res.status(200).json({ summary: chunkSummaries });
+
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
