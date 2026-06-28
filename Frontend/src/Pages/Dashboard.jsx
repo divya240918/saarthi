@@ -129,6 +129,10 @@ export default function DashboardPage() {
       return;
     }
 
+    else if(tool.id === 'summary') {
+      navigate(`/summary/${selectedDoc._id}`);
+    }
+
     setToast({ type: "info", msg: `Opening ${tool.title} for "${selectedDoc.fileName}" — coming soon!` });
   };
 
