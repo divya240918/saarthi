@@ -36,13 +36,19 @@ export const generateSummary = async (req, res) => {
                 .map(p => `[Page ${p.pageNumber}]\n${p.content}`)
                 .join("\n\n");
 
-            const prompt = `Summarize the following document excerpt into 3-5 clear bullet points. Focus on key concepts and important facts only.
-            Respond ONLY with a valid JSON array of strings, no markdown, no extra text:
-            ["Point 1", "Point 2", "Point 3"]
+            const prompt = `You are a document summarizer. Read the following document excerpt and extract the most important points.
 
-            DOCUMENT EXCERPT:
-            ${pdfContext}`;
+                STRICT RULES:
+                - Respond ONLY with a raw JSON array of strings
+                - No markdown, no backticks, no explanation, no intro text
+                - Each string should be one complete, informative sentence
+                - Generate between 3 and 5 points
 
+                Example of valid response:
+                ["Point one here.", "Point two here.", "Point three here."]
+
+                DOCUMENT EXCERPT:
+                ${pdfContext}`;
             const completion = await groq.chat.completions.create({
                 model: "llama-3.1-8b-instant",
                 messages: [{ role: "user", content: prompt }],
@@ -57,7 +63,7 @@ export const generateSummary = async (req, res) => {
                 const points = JSON.parse(clean);
                 chunkSummaries.push(...points);
             } catch {
-
+                console.log("Failed chunk parse:", clean);
             }
 
             return res.status(200).json({ summary: chunkSummaries });
