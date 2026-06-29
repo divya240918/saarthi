@@ -8,6 +8,7 @@ import ChatPage from './Pages/Chatpage.jsx';
 import QuizPage from './Pages/QuizPage.jsx';
 import FlashcardsPage from './Pages/Flashcardpage.jsx';
 import SummaryPage from './Pages/Summarypage.jsx';
+import NotesPage from './Pages/Notespage.jsx';
 
 function App() {
   
@@ -22,6 +23,7 @@ function App() {
       <Route path='/quiz/:id' element={<QuizPage />} />
       <Route path='/flashcards/:id' element={<FlashcardsPage />} />
       <Route path='/summary/:id' element={<SummaryPage />} />
+      <Route path='/notes/:id' element={<NotesPage />} />
     </Routes>
 
   )

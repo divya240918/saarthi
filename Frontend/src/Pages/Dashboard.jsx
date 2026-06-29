@@ -133,6 +133,11 @@ export default function DashboardPage() {
       navigate(`/summary/${selectedDoc._id}`);
     }
 
+    else if(tool.id === 'notes') {
+      navigate(`/notes/${selectedDoc._id}`);
+      return;
+    }
+
     setToast({ type: "info", msg: `Opening ${tool.title} for "${selectedDoc.fileName}" — coming soon!` });
   };
 

@@ -1,0 +1,256 @@
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import API from "../services/api";
+
+const BackIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
+const SpinnerIcon = () => (
+  <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <circle cx="12" cy="12" r="10" strokeOpacity={0.25} />
+    <path d="M12 2a10 10 0 0 1 10 10" />
+  </svg>
+);
+const CopyIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </svg>
+);
+const ChevronIcon = ({ open }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
+    className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
+// ── Single topic card (collapsible) ──────────────────────────────────────────
+function TopicCard({ topic, points, index, defaultOpen }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (e) => {
+    e.stopPropagation();
+    const text = `${topic}\n${points.map((p, i) => `  ${i + 1}. ${p}`).join("\n")}`;
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className={`bg-white rounded-2xl border border-slate-100 shadow-[0_4px_16px_rgba(10,22,40,0.06)] overflow-hidden transition-all duration-200 hover:shadow-[0_8px_24px_rgba(10,22,40,0.09)]`}>
+      {/* Header */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-4 px-6 py-4 text-left"
+      >
+        <div className="w-8 h-8 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center font-syne font-bold text-[13px] text-orange-600 shrink-0">
+          {index + 1}
+        </div>
+        <h3 className="flex-1 font-syne font-bold text-[16px] text-navy">{topic}</h3>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={handleCopy}
+            className="px-2.5 py-1.5 rounded-lg border border-slate-200 font-inter text-[11px] text-slate-500 hover:border-orange-300 hover:text-orange-600 transition-all duration-200 flex items-center gap-1"
+          >
+            <CopyIcon />
+            {copied ? "Copied!" : "Copy"}
+          </button>
+          <span className="text-[11px] font-inter text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
+            {points.length} pts
+          </span>
+          <ChevronIcon open={open} />
+        </div>
+      </button>
+
+      {/* Points */}
+      {open && (
+        <div className="px-6 pb-5 border-t border-slate-100 pt-4 flex flex-col gap-2.5">
+          {points.map((point, i) => (
+            <div key={i} className="flex gap-3 items-start">
+              <span className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center font-syne font-bold text-[10px] text-orange-600 shrink-0 mt-0.5">
+                {i + 1}
+              </span>
+              <p className="font-inter text-[14px] text-slate-700 leading-relaxed">{point}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
+export default function NotesPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [allExpanded, setAllExpanded] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const res = await API.post(`/notes/${id}`);
+        setNotes(res.data.notes || []);
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || "Failed to generate notes.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNotes();
+  }, [id]);
+
+  const filteredNotes = notes.filter(n =>
+    n.topic.toLowerCase().includes(search.toLowerCase()) ||
+    n.points.some(p => p.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const handleCopyAll = () => {
+    const text = notes.map((n, i) =>
+      `${i + 1}. ${n.topic}\n${n.points.map((p, j) => `   ${j + 1}. ${p}`).join("\n")}`
+    ).join("\n\n");
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // ── Loading ───────────────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-offwhite dot-bg flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="flex justify-center"><SpinnerIcon /></div>
+          <p className="font-inter text-[14px] text-slate-500">Generating structured notes…</p>
+          <p className="font-inter text-[12px] text-slate-400">This may take a few seconds</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Error ─────────────────────────────────────────────────────────────────
+  if (error) {
+    return (
+      <div className="min-h-screen bg-offwhite dot-bg flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-red-500 font-inter text-[14px]">⚠️ {error}</p>
+          <button onClick={() => navigate("/dashboard")}
+            className="text-blue font-inter text-[13px] underline">
+            ← Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Main ─────────────────────────────────────────────────────────────────
+  return (
+    <div className="min-h-screen bg-offwhite dot-bg flex flex-col">
+
+      {/* Navbar */}
+      <nav className="sticky top-0 z-50 h-[66px] flex items-center justify-between px-[5%] bg-white/95 backdrop-blur-xl shadow-[0_1px_20px_rgba(10,22,40,0.07)] border-b border-slate-100">
+        <button onClick={() => navigate("/dashboard")}
+          className="flex items-center gap-1.5 text-slate-500 hover:text-navy font-inter text-[13px] transition-colors">
+          <BackIcon /> Dashboard
+        </button>
+
+        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 border border-orange-100">
+          <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+          <span className="font-inter text-[12.5px] text-orange-700 font-medium">
+            {notes.length} topics
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setAllExpanded(e => !e)}
+            className="px-3 py-2 rounded-xl border border-slate-200 bg-white font-inter text-[12px] text-slate-600 hover:border-orange-300 hover:text-orange-600 transition-all duration-200"
+          >
+            {allExpanded ? "Collapse all" : "Expand all"}
+          </button>
+          <button
+            onClick={handleCopyAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white font-inter text-[12px] text-slate-600 hover:border-orange-300 hover:text-orange-600 transition-all duration-200"
+          >
+            <CopyIcon />
+            {copied ? "Copied!" : "Copy all"}
+          </button>
+        </div>
+      </nav>
+
+      {/* Header */}
+      <div className="px-[5%] pt-8 pb-4 text-center">
+        <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-2xl mx-auto mb-3">✨</div>
+        <h1 className="font-syne font-extrabold text-[24px] text-navy">Study Notes</h1>
+        <p className="font-inter text-[13px] text-slate-500 mt-1">Topic-wise notes generated from your PDF</p>
+      </div>
+
+      {/* Search */}
+      <div className="px-[5%] mb-6">
+        <div className="max-w-[720px] mx-auto relative">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">🔍</span>
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search topics or points…"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border-[1.5px] border-slate-200 bg-white font-inter text-[14px] text-navy placeholder:text-slate-400 focus:outline-none focus:border-orange-400 transition-colors"
+          />
+          {search && (
+            <button onClick={() => setSearch("")}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm">
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Notes */}
+      <div className="px-[5%] pb-12">
+        <div className="max-w-[720px] mx-auto flex flex-col gap-4">
+          {filteredNotes.length === 0 ? (
+            <div className="text-center py-16 text-slate-400 font-inter text-[14px]">
+              No topics match "{search}"
+            </div>
+          ) : (
+            filteredNotes.map((note, i) => (
+              <TopicCard
+                key={i}
+                index={i}
+                topic={note.topic}
+                points={note.points}
+                defaultOpen={allExpanded || i === 0}
+              />
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Bottom actions */}
+      <div className="sticky bottom-0 px-[5%] py-5 bg-white/90 backdrop-blur-xl border-t border-slate-100">
+        <div className="max-w-[720px] mx-auto flex gap-3">
+          <button
+            onClick={() => navigate(`/chat/${id}`)}
+            className="flex-1 py-3.5 rounded-[12px] border-[1.5px] border-blue-200 bg-blue-50 font-syne font-semibold text-[14px] text-blue hover:bg-blue-100 transition-all duration-200"
+          >
+            💬 Ask questions about this doc
+          </button>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="flex-1 py-3.5 rounded-[12px] border-[1.5px] border-slate-200 bg-white font-syne font-semibold text-[14px] text-navy hover:border-slate-300 transition-all duration-200"
+          >
+            ← Dashboard
+          </button>
+        </div>
+      </div>
+
+    </div>
+  );
+}
