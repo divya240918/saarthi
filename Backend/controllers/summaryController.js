@@ -41,8 +41,14 @@ export const generateSummary = async (req, res) => {
 
             const prompt = `You are a document summarizer. Extract key points from the excerpt below.
 
+STRICT RULES:
+- Each point must be a complete informative sentence with actual content
+- Do NOT include headings, titles, or topic names as points (e.g. "Data Communication" alone is not a valid point)
+- Each point must explain something, not just name something
+- Minimum 10 words per point
+
 Respond ONLY with a valid JSON array of strings, no markdown, no extra text:
-["Point 1", "Point 2", "Point 3"]
+["Point 1 as a complete sentence.", "Point 2 as a complete sentence."]
 
 DOCUMENT EXCERPT:
 ${pdfContext}`;
