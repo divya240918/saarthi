@@ -38,7 +38,7 @@ export const generateNotes = async (req, res) => {
             const bacthResults = await Promise.all(
                 batch.map(async (chunk) => {
                     const pdfContext = chunk
-                        .map(p => `[Page ${p.pageNumber}]\n${p.conetnt}`)
+                        .map(p => `[Page ${p.pageNumber}]\n${p.content}`)
                         .join("\n\n");
 
                     const prompt = `You are a study notes generator. Convert the document excerpt below into structured study notes.
@@ -63,7 +63,7 @@ export const generateNotes = async (req, res) => {
                     try {
                         const completion = await groq.chat.completions.create({
                             model: "llama-3.1-8b-instant",
-                            messages: { role: "user", content: prompt },
+                            messages: [{ role: "user", content: prompt }],
                             max_tokens: 1024,
                         });
 
@@ -83,7 +83,7 @@ export const generateNotes = async (req, res) => {
             }
         }
 
-        return res.status(200), json({ notes: allNotes });
+        return res.status(200).json({ notes: allNotes });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
