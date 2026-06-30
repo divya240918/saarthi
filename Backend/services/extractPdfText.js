@@ -1,7 +1,7 @@
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import axios from 'axios';
 import { createWorker } from "tesseract.js";
-import { pdf } from "pdf-to-img";
+import { createCanvas } from "canvas";
 
 export const extractPdfText = async (pdfUrl) => {
 
@@ -15,7 +15,7 @@ export const extractPdfText = async (pdfUrl) => {
         data: new Uint8Array(pdfBuffer),
     }).promise;
 
-    console.log(`PDF has ${pdfDoc.numPages} pages`); // ✅ add
+    console.log(`PDF has ${pdfDoc.numPages} pages`);
 
     const pages = [];
     const pagesNeedingOCR = [];
@@ -29,7 +29,7 @@ export const extractPdfText = async (pdfUrl) => {
             .join(" ")
             .trim();
 
-        console.log(`Page ${i}: extracted ${text.length} chars normally`); // ✅ add
+        console.log(`Page ${i}: extracted ${text.length} chars normally`);
 
         if (text.length < 30) {
             pagesNeedingOCR.push(i);
@@ -39,23 +39,28 @@ export const extractPdfText = async (pdfUrl) => {
         }
     }
 
-    console.log(`Pages needing OCR: ${pagesNeedingOCR.join(", ")}`); // ✅ add
+    console.log(`Pages needing OCR: ${pagesNeedingOCR.join(", ")}`);
 
     if (pagesNeedingOCR.length > 0) {
         const worker = await createWorker("eng");
-        const imageDoc = await pdf(pdfBuffer, { scale: 2 });
 
-        let pageIndex = 0;
-        for await (const imageBuffer of imageDoc) {
-            pageIndex++;
-            console.log(`OCR processing page ${pageIndex}`); // ✅ add
+        for (const pageNum of pagesNeedingOCR) {
+            const page = await pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({ scale: 2 });
 
-            if (pagesNeedingOCR.includes(pageIndex)) {
-                const { data: { text } } = await worker.recognize(imageBuffer);
-                console.log(`OCR result for page ${pageIndex}: ${text.length} chars`); // ✅ add
-                const pageObj = pages.find(p => p.pageNumber === pageIndex);
-                pageObj.content = text.trim();
-            }
+            const canvas = createCanvas(viewport.width, viewport.height);
+            const ctx = canvas.getContext("2d");
+
+            await page.render({ canvasContext: ctx, viewport }).promise;
+
+            const imageBuffer = canvas.toBuffer("image/png");
+
+            console.log(`OCR processing page ${pageNum}`);
+            const { data: { text } } = await worker.recognize(imageBuffer);
+            console.log(`OCR result for page ${pageNum}: ${text.length} chars`);
+
+            const pageObj = pages.find(p => p.pageNumber === pageNum);
+            pageObj.content = text.trim();
         }
 
         await worker.terminate();
